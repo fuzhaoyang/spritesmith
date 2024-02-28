@@ -1,2 +1,5 @@
-echo -e "旧包删除完成"
-echo -e "基座应用依赖下载开始"
+echo -e "清除构建包"
+rm -rf ./dist
+echo -e "开始生成雪碧图"
+npm run build 
+echo -e "雪碧图已生成"

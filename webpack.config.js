@@ -1,11 +1,11 @@
 ﻿// 引入插件
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const webpack = require('webpack');
-const SpritesmithPlugin = require('webpack-spritesmith');
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const webpack = require('webpack')
+const SpritesmithPlugin = require('webpack-spritesmith')
 const path = require('path')
 var templateFunction = function (data) {
     var shared = '.ico { background-image: url(I) }'
-        .replace('I', data.sprites[0].image);
+        .replace('I', data.sprites[0].image)
 
     var perSprite = data.sprites.map(function (sprite) {
         return '.icoccc-N { width: Wpx; height: Hpx; background-position: Xpx Ypx; }'
@@ -13,10 +13,10 @@ var templateFunction = function (data) {
             .replace('W', sprite.width)
             .replace('H', sprite.height)
             .replace('X', sprite.offset_x)
-            .replace('Y', sprite.offset_y);
-    }).join('\n');
+            .replace('Y', sprite.offset_y)
+    }).join('\n')
 
-    return shared + '\n' + perSprite;
+    return shared + '\n' + perSprite
 }
 
 module.exports = {
@@ -113,16 +113,16 @@ module.exports = {
             // },
         })
     ],
-    devServer:{
+    devServer: {
         // 配置代理服务器，进行代理数据
-        proxy:{
-              // 前缀名，表示/api开头的都会被代理
-              '/upload':{
-                    // 代理的基础路径
-                    target:'http://localhost:3000/upload/',
-                    // 路径重写，会把路径上的 /api 替换成空
-                    pathRewrite:{'^/upload': ''}
-              }
+        proxy: {
+            // 前缀名，表示/api开头的都会被代理
+            '/upload': {
+                // 代理的基础路径
+                target: 'http://localhost:3000/upload/',
+                // 路径重写，会把路径上的 /api 替换成空
+                pathRewrite: { '^/upload': '' }
+            }
         }
     },
     resolve: {

@@ -3,6 +3,7 @@
          <h2>上传图片</h2>
         <form action="/upload" method="POST" enctype="multipart/form-data">
             <input type="file" name="image">
+            <input type="file" name="image">
             <button type="submit">上传</button>
         </form>
         <div class="icon-APP_manager"></div>
