@@ -52,9 +52,14 @@ app.post('/upload', upload.array('image'), (req, res) => {
       res.send(error)
       return
     }
+    const imgData = fs.readFileSync('./src/assets/sprite.png');
+    const cssData = fs.readFileSync('./src/assets/sprite.css',{encoding:'utf8', flag:'r'});
     res.send({
       status: 200,
-      data: '雪碧图已生成'
+      data: {
+        img:'data:image/png;base64,' + Buffer.from(imgData).toString('base64'),
+        css: cssData
+      }
     })
   })
 })
