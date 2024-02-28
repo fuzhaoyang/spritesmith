@@ -52,7 +52,10 @@ app.post('/upload', upload.array('image'), (req, res) => {
       res.send(error)
       return
     }
-    res.send('雪碧图已生成')
+    res.send({
+      status: 200,
+      data: '雪碧图已生成'
+    })
   })
 })
 
