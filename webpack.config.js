@@ -119,7 +119,7 @@ module.exports = {
             // 前缀名，表示/api开头的都会被代理
             '/upload': {
                 // 代理的基础路径
-                target: 'http://localhost:3000/upload/',
+                target: 'http://code-nav.top:3000/upload/',
                 // 路径重写，会把路径上的 /api 替换成空
                 pathRewrite: { '^/upload': '' }
             }

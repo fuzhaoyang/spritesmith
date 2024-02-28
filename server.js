@@ -45,7 +45,7 @@ app.get('/', (req, res) => {
 })
 
 // 处理图片上传
-app.post('/spritesmith/upload', upload.array('image'), (req, res) => {
+app.post('/upload', upload.array('image'), (req, res) => {
   exec('./update.sh', (error, stdout, stderr) => {
     if (error) {
       console.log(error)
