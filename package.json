@@ -4,7 +4,7 @@
   "scripts": {
     "build": "webpack --config webpack.config.js",
     "dev": "webpack-dev-server --open --config webpack.config.js && npm run server",
-    "server": "node server.js"
+    "server": "pm2 start server.js --watch -f"
   },
   "dependencies": {
     "autoprefixer": "^7.2.3",
