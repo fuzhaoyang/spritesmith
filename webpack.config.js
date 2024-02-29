@@ -103,7 +103,7 @@ module.exports = {
                 cssImageRef: './sprite.png'
             },
             spritesmithOptions: {
-                // 这个是雪碧图的排列顺序,top-down、left-right、diagonal、alt-diagonal
+                // 这个是雪碧图的排列顺序,binary-tree、top-down、left-right、diagonal、alt-diagonal
                 algorithm: 'binary-tree',
                 // 雪碧图里，图片和图片的距离，单位是px
                 padding: 5
