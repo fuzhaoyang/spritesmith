@@ -24,20 +24,6 @@ function deleteFolderRecursive (folderPath) {
     //fs.rmdirSync(folderPath);
   }
 }
-// 设置存储引擎和文件名
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    if (fs.readdirSync('./src/icons').length) {
-      deleteFolderRecursive('./src/icons')
-    }
-    cb(null, './src/icons') // 图片将会存储在 ./src/icons 目录下 
-  },
-  filename: function (req, file, cb) {
-    cb(null, file.originalname) // 设置文件名
-  }
-})
-
-const upload = multer({ storage: storage })
 
 // 上传页面路由
 app.get('/', (req, res) => {
@@ -45,19 +31,62 @@ app.get('/', (req, res) => {
 })
 
 // 处理图片上传
-app.post('/upload', upload.array('image'), (req, res) => {
+app.post('/upload', (req, res) => {
+  const uuid = req.headers.uuid
+  global.uuid = uuid
+  if (fs.existsSync(`./src/icons/${uuid}`)) {
+    if (fs.readdirSync(`./src/icons/${uuid}`).length) {
+      deleteFolderRecursive(`./src/icons/${uuid}`)
+    }
+  } else {
+    fs.mkdir(`./src/icons/${uuid}`, (err) => {
+      if (err) {
+        console.log('文件夹创建失败!')
+      } else {
+        console.log('文件夹创建成功!')
+      }
+    })
+  }
+  if (fs.existsSync(`./src/assets/${uuid}`)) {
+    if (fs.readdirSync(`./src/assets/${uuid}`).length) {
+      deleteFolderRecursive(`./src/assets/${uuid}`)
+    }
+  } else {
+    fs.mkdir(`./src/assets/${uuid}`, (err) => {
+      if (err) {
+        console.log('文件夹创建失败!')
+      } else {
+        console.log('文件夹创建成功!')
+      }
+    })
+  }
+  // 设置存储引擎和文件名
+  const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, `./src/icons/${uuid}`) // 图片将会存储在 ./src/icons 目录下 
+    },
+    filename: function (req, file, cb) {
+      cb(null, file.originalname) // 设置文件名
+    }
+  })
+  const upload = multer({ storage: storage })
+  upload.array('image')(req, res, (err) => {
+    console.log(err)
+  })
+  fs.writeFile('./.env', uuid, (err) => {
+    console.log(err)
+  })
   exec('./update.sh', (error, stdout, stderr) => {
     if (error) {
-      console.log(error)
       res.send(error)
       return
     }
-    const imgData = fs.readFileSync('./src/assets/sprite.png');
-    const cssData = fs.readFileSync('./src/assets/sprite.css',{encoding:'utf8', flag:'r'});
+    const imgData = fs.readFileSync(`./src/assets/${uuid}/sprite.png`)
+    const cssData = fs.readFileSync(`./src/assets/${uuid}/sprite.css`, { encoding: 'utf8', flag: 'r' })
     res.send({
       status: 200,
       data: {
-        img:'data:image/png;base64,' + Buffer.from(imgData).toString('base64'),
+        img: 'data:image/png;base64,' + Buffer.from(imgData).toString('base64'),
         css: cssData
       }
     })

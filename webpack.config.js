@@ -3,6 +3,8 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const webpack = require('webpack')
 const SpritesmithPlugin = require('webpack-spritesmith')
 const path = require('path')
+const fs = require('fs')
+const imgPath = fs.readFileSync('./.env', { encoding: 'utf8', flag: 'r' })
 var templateFunction = function (data) {
     var shared = '.ico { background-image: url(I) }'
         .replace('I', data.sprites[0].image)
@@ -74,7 +76,7 @@ module.exports = {
             // 目标小图标
             src: {
                 // 图片所在文件夹（无视子文件夹）
-                cwd: path.resolve(__dirname, './src/icons'),
+                cwd: path.resolve(__dirname, `./src/icons/${imgPath}`),
                 // 匹配 png 文件，可以用glob语法，比如 '*.(png|jpg)' 这样；
                 // 但png和jpg拼一起，有时候图片无法正常显示
                 glob: '*.png'
@@ -83,11 +85,11 @@ module.exports = {
             target: {
                 // 将其输出到 src/assets 目录下
                 // 这个是打包前的目录，所以不要学某个教程将其输出到 dist 目录下
-                image: path.resolve(__dirname, './src/assets/sprite.png'),
+                image: path.resolve(__dirname, `./src/assets/${imgPath}/sprite.png`),
                 // 可以是字符串、或者数组
                 css: [
                     // path.resolve(__dirname, './src/assets/sprite2.css')，
-                    path.resolve(__dirname, './src/assets/sprite.css')
+                    path.resolve(__dirname, `./src/assets/${imgPath}/sprite.css`)
                 ]
             },
             apiOptions: {
@@ -104,7 +106,7 @@ module.exports = {
                 // 这个是雪碧图的排列顺序（从上到下）
                 algorithm: 'top-down',
                 // 雪碧图里，图片和图片的距离，单位是px
-                // padding: 100
+                padding: 5
             },
             // retina: {
             //     type: 'retina',
