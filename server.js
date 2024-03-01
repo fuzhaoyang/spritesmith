@@ -34,7 +34,7 @@ app.get('/', (req, res) => {
 
 // 处理图片上传
 app.post('/upload', (req, res) => {
-  const uuid = req.headers.uuid
+  const { uuid, type, padding } = req.headers
   global.uuid = uuid
   if (fs.existsSync(`./src/icons/${uuid}`)) {
     if (fs.readdirSync(`./src/icons/${uuid}`).length) {
@@ -76,7 +76,13 @@ app.post('/upload', (req, res) => {
   upload.array('image')(req, res, (err) => {
     console.log(req.body, 444)
   })
-  fs.writeFile('./.env', uuid, (err) => {
+  fs.writeFile('./env/uuid', uuid, (err) => {
+    console.log(err)
+  })
+  fs.writeFile('./env/type', type, (err) => {
+    console.log(err)
+  })
+  fs.writeFile('./env/padding', padding, (err) => {
     console.log(err)
   })
   exec('./update.sh', (error, stdout, stderr) => {
@@ -86,11 +92,12 @@ app.post('/upload', (req, res) => {
     }
     const imgData = fs.readFileSync(`./src/assets/${uuid}/sprite.png`)
     const cssData = fs.readFileSync(`./src/assets/${uuid}/sprite.css`, { encoding: 'utf8', flag: 'r' })
+    console.log(cssData, 123456789)
     res.send({
       status: 200,
       data: {
         img: 'data:image/png;base64,' + Buffer.from(imgData).toString('base64'),
-        css: cssData.replaceAll(`/www/server/nginx/html/spritesmith/src/icons/${uuid}/`, '')
+        css: cssData && cssData.replace(`/www/server/nginx/html/spritesmith/src/icons/${uuid}/`, '')
       }
     })
   })

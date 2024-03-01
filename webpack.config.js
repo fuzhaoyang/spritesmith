@@ -4,7 +4,9 @@ const webpack = require('webpack')
 const SpritesmithPlugin = require('webpack-spritesmith')
 const path = require('path')
 const fs = require('fs')
-const imgPath = fs.readFileSync('./.env', { encoding: 'utf8', flag: 'r' })
+const imgPath = fs.readFileSync('./env/uuid', { encoding: 'utf8', flag: 'r' })
+const type = fs.readFileSync('./env/type', { encoding: 'utf8', flag: 'r' })
+const padding = fs.readFileSync('./env/padding', { encoding: 'utf8', flag: 'r' })
 var templateFunction = function (data) {
     var shared = '.ico { background-image: url(I) }'
         .replace('I', data.sprites[0].image)
@@ -104,9 +106,9 @@ module.exports = {
             },
             spritesmithOptions: {
                 // 这个是雪碧图的排列顺序,binary-tree、top-down、left-right、diagonal、alt-diagonal
-                algorithm: 'binary-tree',
+                algorithm: `${type}`,
                 // 雪碧图里，图片和图片的距离，单位是px
-                padding: 5
+                padding: Number(padding)
             },
             // retina: {
             //     type: 'retina',
