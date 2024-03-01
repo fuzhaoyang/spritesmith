@@ -76,13 +76,12 @@ app.post('/upload', (req, res) => {
   upload.array('image')(req, res, (err) => {
     console.log(req.body, 444)
   })
-  fs.writeFile('./env/uuid', uuid, (err) => {
-    console.log(err)
-  })
-  fs.writeFile('./env/type', type, (err) => {
-    console.log(err)
-  })
-  fs.writeFile('./env/padding', padding, (err) => {
+  const text = `module.exports = {
+    uuid: '${uuid}',
+    type: '${type}',
+    padding: ${padding}
+  }`
+  fs.writeFile('./env.js', text, (err) => {
     console.log(err)
   })
   exec('./update.sh', (error, stdout, stderr) => {
@@ -97,7 +96,7 @@ app.post('/upload', (req, res) => {
       status: 200,
       data: {
         img: 'data:image/png;base64,' + Buffer.from(imgData).toString('base64'),
-        css: cssData && cssData.replace(`/www/server/nginx/html/spritesmith/src/icons/${uuid}/`, '')
+        css: cssData && cssData.replaceAll(`/www/server/nginx/html/spritesmith/src/icons/${uuid}/`, '')
       }
     })
   })
