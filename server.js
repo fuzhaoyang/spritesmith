@@ -3,8 +3,10 @@ const path = require('path')
 const multer = require('multer')
 const { exec } = require('child_process')
 const fs = require('fs')
-const { stdout, stderr } = require('process')
+const bodyParser = require('body-parser')
 const app = express()
+app.use(bodyParser.json())//数据JSON类型
+app.use(bodyParser.urlencoded({ extended: false }))//解析post请求数据
 function deleteFolderRecursive (folderPath) {
   //判断文件夹是否存在
   if (fs.existsSync(folderPath)) {
@@ -66,12 +68,13 @@ app.post('/upload', (req, res) => {
       cb(null, `./src/icons/${uuid}`) // 图片将会存储在 ./src/icons 目录下 
     },
     filename: function (req, file, cb) {
+      console.log(file, 525252)
       cb(null, file.originalname) // 设置文件名
     }
   })
   const upload = multer({ storage: storage })
   upload.array('image')(req, res, (err) => {
-    console.log(err)
+    console.log(req.body, 444)
   })
   fs.writeFile('./.env', uuid, (err) => {
     console.log(err)
@@ -87,7 +90,7 @@ app.post('/upload', (req, res) => {
       status: 200,
       data: {
         img: 'data:image/png;base64,' + Buffer.from(imgData).toString('base64'),
-        css: cssData
+        css: cssData.replaceAll(`/www/server/nginx/html/spritesmith/src/icons/${uuid}/`, '')
       }
     })
   })
