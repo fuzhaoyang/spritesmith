@@ -3,6 +3,7 @@ const path = require('path')
 const multer = require('multer')
 const { exec } = require('child_process')
 const fs = require('fs')
+const sharp = require('sharp')
 const bodyParser = require('body-parser')
 const app = express()
 app.use(bodyParser.json())//数据JSON类型
@@ -83,13 +84,36 @@ app.post('/upload', (req, res) => {
       cb(null, `./src/icons/${buildParams.uuid}`) // 图片将会存储在 ./src/icons 目录下 
     },
     filename: function (req, file, cb) {
-      console.log(file, 525252)
       cb(null, file.originalname) // 设置文件名
     }
   })
   const upload = multer({ storage: storage })
+  const arr = []
   upload.array('image')(req, res, (err) => {
-    console.log(req.body, 444)
+    req.files.forEach(item => {
+      console.log(item)
+      if (item.mimetype !== 'image/png') {
+        arr.push({
+          path: item.path,
+          name: `${item.filename.split('.')[0]}.png`
+        })
+      }
+    })
+    arr.forEach(item => {
+      sharp(item.path)
+        .toFormat('png')
+        .toFile(`./src/icons/${buildParams.uuid}/${item.name}`, (err, info) => {
+          if (err) {
+            console.error("转换失败", err)
+          } else {
+            exec(`rm -rf ${item.path}`, (error, stdout, stderr) => {
+              if (error) {
+                console.error("删除失败", err)
+              }
+            })
+          }
+        })
+    })
   })
   const text = `module.exports = {
     uuid: '${buildParams.uuid}',
