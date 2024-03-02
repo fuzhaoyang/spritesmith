@@ -7,6 +7,8 @@ const bodyParser = require('body-parser')
 const app = express()
 app.use(bodyParser.json())//数据JSON类型
 app.use(bodyParser.urlencoded({ extended: false }))//解析post请求数据
+let isBuild = false
+let buildParams
 function deleteFolderRecursive (folderPath) {
   //判断文件夹是否存在
   if (fs.existsSync(folderPath)) {
@@ -34,14 +36,27 @@ app.get('/', (req, res) => {
 
 // 处理图片上传
 app.post('/upload', (req, res) => {
+  if (isBuild && buildParams.uuid !== req.headers.uuid) {
+    res.send({
+      status: 502,
+      msg: '网络占用,请重试！'
+    })
+    return
+  }
   const { uuid, type, padding } = req.headers
-  global.uuid = uuid
-  if (fs.existsSync(`./src/icons/${uuid}`)) {
-    if (fs.readdirSync(`./src/icons/${uuid}`).length) {
-      deleteFolderRecursive(`./src/icons/${uuid}`)
+  buildParams = {
+    uuid: uuid,
+    type: type,
+    padding: padding,
+    res: res
+  }
+  isBuild = true
+  if (fs.existsSync(`./src/icons/${buildParams.uuid}`)) {
+    if (fs.readdirSync(`./src/icons/${buildParams.uuid}`).length) {
+      deleteFolderRecursive(`./src/icons/${buildParams.uuid}`)
     }
   } else {
-    fs.mkdir(`./src/icons/${uuid}`, (err) => {
+    fs.mkdir(`./src/icons/${buildParams.uuid}`, (err) => {
       if (err) {
         console.log('文件夹创建失败!')
       } else {
@@ -49,12 +64,12 @@ app.post('/upload', (req, res) => {
       }
     })
   }
-  if (fs.existsSync(`./src/assets/${uuid}`)) {
-    if (fs.readdirSync(`./src/assets/${uuid}`).length) {
-      deleteFolderRecursive(`./src/assets/${uuid}`)
+  if (fs.existsSync(`./src/assets/${buildParams.uuid}`)) {
+    if (fs.readdirSync(`./src/assets/${buildParams.uuid}`).length) {
+      deleteFolderRecursive(`./src/assets/${buildParams.uuid}`)
     }
   } else {
-    fs.mkdir(`./src/assets/${uuid}`, (err) => {
+    fs.mkdir(`./src/assets/${buildParams.uuid}`, (err) => {
       if (err) {
         console.log('文件夹创建失败!')
       } else {
@@ -65,7 +80,7 @@ app.post('/upload', (req, res) => {
   // 设置存储引擎和文件名
   const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-      cb(null, `./src/icons/${uuid}`) // 图片将会存储在 ./src/icons 目录下 
+      cb(null, `./src/icons/${buildParams.uuid}`) // 图片将会存储在 ./src/icons 目录下 
     },
     filename: function (req, file, cb) {
       console.log(file, 525252)
@@ -77,9 +92,9 @@ app.post('/upload', (req, res) => {
     console.log(req.body, 444)
   })
   const text = `module.exports = {
-    uuid: '${uuid}',
-    type: '${type}',
-    padding: ${padding}
+    uuid: '${buildParams.uuid}',
+    type: '${buildParams.type}',
+    padding: ${buildParams.padding}
   }`
   fs.writeFile('./env.js', text, (err) => {
     console.log(err)
@@ -89,14 +104,14 @@ app.post('/upload', (req, res) => {
       res.send(error)
       return
     }
-    const imgData = fs.readFileSync(`./src/assets/${uuid}/sprite.png`)
-    const cssData = fs.readFileSync(`./src/assets/${uuid}/sprite.css`, { encoding: 'utf8', flag: 'r' })
-    console.log(cssData, 123456789)
-    res.send({
+    const imgData = fs.readFileSync(`./src/assets/${buildParams.uuid}/sprite.png`)
+    const cssData = fs.readFileSync(`./src/assets/${buildParams.uuid}/sprite.css`, { encoding: 'utf8', flag: 'r' })
+    isBuild = false
+    buildParams.res.send({
       status: 200,
       data: {
         img: 'data:image/png;base64,' + Buffer.from(imgData).toString('base64'),
-        css: cssData && cssData.replaceAll(`/www/server/nginx/html/spritesmith/src/icons/${uuid}/`, '')
+        css: cssData && cssData.replaceAll(`/www/server/nginx/html/spritesmith/src/icons/${buildParams.uuid}/`, '')
       }
     })
   })
