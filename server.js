@@ -103,7 +103,7 @@ app.post('/upload', (req, res) => {
     })
     console.log(arr)
     arr.forEach(item => {
-      if (item.mimetype === 'image/jpeg') {
+      if (item.mimetype === 'image/jpeg' || item.mimetype === 'image/gif') {
         Jimp.read(item.path, (err, image) => {
           image.write(`./src/icons/${buildParams.uuid}/${item.name}`)
           if (err) {
