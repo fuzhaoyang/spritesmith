@@ -36,6 +36,20 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html')
 })
 
+// 刷新
+app.get('/upload/:id', (req, res) => {
+  const uuid = req.params.id
+  const imgData = fs.readFileSync(`./src/assets/${uuid}/sprite.png`)
+  const cssData = fs.readFileSync(`./src/assets/${uuid}/sprite.css`, { encoding: 'utf8', flag: 'r' })
+  res.send({
+    status: 200,
+    data: {
+      img: 'data:image/png;base64,' + Buffer.from(imgData).toString('base64'),
+      css: cssData && cssData.replaceAll(`/www/server/nginx/html/spritesmith/src/icons/${uuid}/`, '')
+    }
+  })
+})
+
 // 处理图片上传
 app.post('/upload', (req, res) => {
   if (isBuild && buildParams.uuid !== req.headers.uuid) {
