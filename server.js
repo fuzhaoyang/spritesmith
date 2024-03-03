@@ -3,7 +3,8 @@ const path = require('path')
 const multer = require('multer')
 const { exec } = require('child_process')
 const fs = require('fs')
-const sharp = require('sharp')
+const Jimp = require('jimp')
+const svg2img = require('svg2img')
 const bodyParser = require('body-parser')
 const app = express()
 app.use(bodyParser.json())//数据JSON类型
@@ -91,57 +92,66 @@ app.post('/upload', (req, res) => {
   const arr = []
   upload.array('image')(req, res, (err) => {
     req.files.forEach(item => {
-      console.log(item)
+      console.log(item.mimetype)
       if (item.mimetype !== 'image/png') {
         arr.push({
           path: item.path,
+          mimetype: item.mimetype,
           name: `${item.filename.split('.')[0]}.png`
         })
       }
     })
+    console.log(arr)
     arr.forEach(item => {
-      sharp(item.path)
-        .toFormat('png')
-        .toFile(`./src/icons/${buildParams.uuid}/${item.name}`, (err, info) => {
+      if (item.mimetype === 'image/jpeg') {
+        Jimp.read(item.path, (err, image) => {
+          image.write(`./src/icons/${buildParams.uuid}/${item.name}`)
           if (err) {
             console.error("转换失败", err)
-          } else {
-            exec(`rm -rf ${item.path}`, (error, stdout, stderr) => {
-              if (error) {
-                console.error("删除失败", err)
-              }
-            })
           }
         })
-    })
-  })
-  const text = `module.exports = {
-    uuid: '${buildParams.uuid}',
-    type: '${buildParams.type}',
-    padding: ${buildParams.padding}
-  }`
-  fs.writeFile('./env.js', text, (err) => {
-    console.log(err)
-  })
-  exec('./update.sh', (error, stdout, stderr) => {
-    if (error) {
-      res.send(error)
-      return
-    }
-    const imgData = fs.readFileSync(`./src/assets/${buildParams.uuid}/sprite.png`)
-    const cssData = fs.readFileSync(`./src/assets/${buildParams.uuid}/sprite.css`, { encoding: 'utf8', flag: 'r' })
-    isBuild = false
-    buildParams.res.send({
-      status: 200,
-      data: {
-        img: 'data:image/png;base64,' + Buffer.from(imgData).toString('base64'),
-        css: cssData && cssData.replaceAll(`/www/server/nginx/html/spritesmith/src/icons/${buildParams.uuid}/`, '')
       }
+      if (item.mimetype === 'image/svg+xml') {
+        svg2img(item.path, { format: 'png' }, function (error, buffer) {
+          fs.writeFileSync(`./src/icons/${buildParams.uuid}/${item.name}`, buffer) // 保存生成的PNG图像到指定位置
+        })
+      }
+      exec(`rm -rf ${item.path}`, (error, stdout, stderr) => {
+        if (error) {
+          console.error("删除失败", err)
+        } else {
+          console.log("删除成功", err)
+        }
+      })
+    })
+    const text = `module.exports = {
+      uuid: '${buildParams.uuid}',
+      type: '${buildParams.type}',
+      padding: ${buildParams.padding}
+    }`
+    fs.writeFile('./env.js', text, (err) => {
+      console.log(err)
+    })
+    exec('./update.sh', (error, stdout, stderr) => {
+      if (error) {
+        res.send(error)
+        return
+      }
+      const imgData = fs.readFileSync(`./src/assets/${buildParams.uuid}/sprite.png`)
+      const cssData = fs.readFileSync(`./src/assets/${buildParams.uuid}/sprite.css`, { encoding: 'utf8', flag: 'r' })
+      isBuild = false
+      buildParams.res.send({
+        status: 200,
+        data: {
+          img: 'data:image/png;base64,' + Buffer.from(imgData).toString('base64'),
+          css: cssData && cssData.replaceAll(`/www/server/nginx/html/spritesmith/src/icons/${buildParams.uuid}/`, '')
+        }
+      })
     })
   })
 })
 
-const PORT = process.env.PORT || 3000
+const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`)
 })
