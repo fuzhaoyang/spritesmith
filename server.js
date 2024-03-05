@@ -243,7 +243,7 @@ app.post('/upload/convert', (req, res) => {
         status: 200,
         data: base64Data
       })
-    }, 5000);
+    }, 2000);
   })
 })
 
