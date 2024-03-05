@@ -165,6 +165,88 @@ app.post('/upload', (req, res) => {
   })
 })
 
+// 处理图片上传
+app.post('/upload/convert', (req, res) => {
+  const { type, uuid} = req.headers
+  if (fs.existsSync(`./convert/original/${uuid}`)) {
+    if (fs.readdirSync(`./convert/original/${uuid}`).length) {
+      deleteFolderRecursive(`./convert/original/${uuid}`)
+    }
+  } else {
+    fs.mkdir(`./convert/original/${uuid}`, (err) => {
+      if (err) {
+        console.log('文件夹创建失败!')
+      } else {
+        console.log('文件夹创建成功!')
+      }
+    })
+  }
+  if (fs.existsSync(`./convert/target/${uuid}`)) {
+    if (fs.readdirSync(`./convert/target/${uuid}`).length) {
+      deleteFolderRecursive(`./convert/target/${uuid}`)
+    }
+  } else {
+    fs.mkdir(`./convert/target/${uuid}`, (err) => {
+      if (err) {
+        console.log('文件夹创建失败!')
+      } else {
+        console.log('文件夹创建成功!')
+      }
+    })
+  }
+  // 设置存储引擎和文件名
+  const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, `./convert/original/${uuid}`)
+    },
+    filename: function (req, file, cb) {
+      cb(null, file.originalname) // 设置文件名
+    }
+  })
+  const upload = multer({ storage: storage })
+  const imgList = [];
+  const base64Data = [];
+  upload.array('image')(req, res, (err) => {
+    req.files.forEach(item => {
+      console.log(item)
+      if (item.mimetype === 'image/svg+xml') {
+        svg2img(item.path, { format: type }, function (error, buffer) {
+          fs.writeFileSync(`./convert/target/${uuid}/${item.name}`, buffer) // 保存生成的PNG图像到指定位置
+        })
+      }
+      if (item.mimetype === 'image/jpeg' || item.mimetype === 'image/gif' || item.mimetype === 'image/png') {
+        Jimp.read(item.path, (err, image) => {
+          image.write(`./convert/target/${uuid}/${item.filename.split('.')[0]}.${type}`)
+          if (err) {
+            console.error("转换失败", err)
+          }
+        })
+      }
+      imgList.push({
+        path: `./convert/target/${uuid}/${item.filename.split('.')[0]}.${type}`,
+        name: `${item.filename.split('.')[0]}.${type}`
+      })
+    })
+    setTimeout(() => {
+      imgList.forEach((list) => {
+        try {
+          const imgData = fs.readFileSync(list.path)
+          base64Data.push({
+            name: list.name,
+            url:'data:image/png;base64,' + Buffer.from(imgData).toString('base64')
+          })
+        } catch (error) {
+          console.log(err)
+        }
+      })
+      res.send({
+        status: 200,
+        data: base64Data
+      })
+    }, 5000);
+  })
+})
+
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`)
