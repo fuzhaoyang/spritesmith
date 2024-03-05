@@ -167,7 +167,7 @@ app.post('/upload', (req, res) => {
 
 // 处理图片上传
 app.post('/upload/convert', (req, res) => {
-  const { type, uuid} = req.headers
+  const { type, uuid } = req.headers
   if (fs.existsSync(`./convert/original/${uuid}`)) {
     if (fs.readdirSync(`./convert/original/${uuid}`).length) {
       deleteFolderRecursive(`./convert/original/${uuid}`)
@@ -204,8 +204,8 @@ app.post('/upload/convert', (req, res) => {
     }
   })
   const upload = multer({ storage: storage })
-  const imgList = [];
-  const base64Data = [];
+  const imgList = []
+  const base64Data = []
   upload.array('image')(req, res, (err) => {
     req.files.forEach(item => {
       console.log(item)
@@ -233,7 +233,7 @@ app.post('/upload/convert', (req, res) => {
           const imgData = fs.readFileSync(list.path)
           base64Data.push({
             name: list.name,
-            url:'data:image/png;base64,' + Buffer.from(imgData).toString('base64')
+            url: 'data:image/png;base64,' + Buffer.from(imgData).toString('base64')
           })
         } catch (error) {
           console.log(err)
@@ -243,7 +243,7 @@ app.post('/upload/convert', (req, res) => {
         status: 200,
         data: base64Data
       })
-    }, 2000);
+    }, 2000)
   })
 })
 
