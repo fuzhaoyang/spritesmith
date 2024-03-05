@@ -7,3 +7,5 @@ package-lock.json
 /src/assets
 /src/icons
 /env.js
+/convert/target
+/convert/original
