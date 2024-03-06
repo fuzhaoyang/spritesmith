@@ -3,6 +3,7 @@ const path = require('path')
 const multer = require('multer')
 const { exec } = require('child_process')
 const fs = require('fs')
+const { v4: uuidv4 } = require('uuid');
 const Jimp = require('jimp')
 const svg2img = require('svg2img')
 const bodyParser = require('body-parser')
@@ -229,11 +230,13 @@ app.post('/upload/convert', (req, res) => {
     })
     setTimeout(() => {
       imgList.forEach((list) => {
+        console.log(uuidv4())
         try {
           const imgData = fs.readFileSync(list.path)
           base64Data.push({
             name: list.name,
-            url: 'data:image/png;base64,' + Buffer.from(imgData).toString('base64')
+            url: 'data:image/png;base64,' + Buffer.from(imgData).toString('base64'),
+            id: uuidv4()
           })
         } catch (error) {
           console.log(err)
